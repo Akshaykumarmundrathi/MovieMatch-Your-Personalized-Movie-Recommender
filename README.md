@@ -14,11 +14,17 @@ This project implements a **collaborative filtering-based movie recommendation s
 ## 📂 Project Structure
 
 .
+
 ├── train.txt # Training data from MovieLens 100K (user, item, rating)
+
 ├── test.txt # Test data from MovieLens 100K
+
 ├── main.py # Main Python script with training, evaluation, visualization
+
 ├── P.npy # Learned user feature matrix
+
 ├── Q.npy # Learned item feature matrix
+
 └── README.md # This file
 
 yaml
