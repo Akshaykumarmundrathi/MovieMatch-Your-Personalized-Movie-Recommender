@@ -1,218 +1,140 @@
+# 🎬 Matrix Factorization for Movie Recommendations (MovieLens 100K)
 
-# Movie Recommendation System: Complete Overview
+This project implements a **collaborative filtering-based movie recommendation system** using **matrix factorization** with **gradient descent optimization**. It is trained and evaluated on the [MovieLens 100K dataset](https://grouplens.org/datasets/movielens/100k/), one of the most widely used datasets for evaluating recommender systems.
 
-## **1. Introduction**
+## 📌 Project Objective
 
-This project is a **movie recommendation system** designed to help users discover movies they might like, based on their personal information and the preferences of similar users. The system uses real-world data from the MovieLens 100K dataset and employs both simple collaborative filtering and advanced matrix factorization techniques.
-
----
-
-## **2. Datasets and Their Structures**
-
-### **a. User Data (`u-1.user`)**
-
-- **Purpose:** Stores information about each user.
-- **Fields:**  
-  - **user_id:** Unique identifier for each user.
-  - **age:** The user’s age.
-  - **gender:** The user’s gender (M or F).
-- **occupation:** The user’s occupation (e.g., technician, writer).
-- **zip_code:** The user’s postal code.
-- **Example:**  
-  ```
-  1|24|M|technician|85711
-  2|53|F|other|94043
-  ```
-
-### **b. Ratings Data (`u-1.data`)**
-
-- **Purpose:** Stores movie ratings given by users.
-- **Fields:**  
-  - **user_id:** The user who gave the rating.
-  - **item_id:** The movie that was rated.
-  - **rating:** The rating score (1–5).
-  - **timestamp:** When the rating was given.
-- **Example:**  
-  ```
-  196	242	3	881250949
-  186	302	3	891717742
-  ```
-
-### **c. Movie Data (`u-1.item`)**
-
-- **Purpose:** Stores details about each movie.
-- **Fields:**  
-  - **movie_id:** Unique identifier for each movie.
-  - **movie_title:** The title of the movie.
-  - **release_date:** When the movie was released.
-  - **video_release_date:** (Often empty)
-  - **IMDb_URL:** Link to the movie on IMDb.
-  - **genre_1 to genre_19:** Binary flags indicating if the movie belongs to each genre.
-- **Example:**  
-  ```
-  1|Toy Story (1995)|01-Jan-1995||http://us.imdb.com/M/title-exact?Toy%20Story%20(1995)|0|0|0|1|1|1|0|0|0|0|0|0|0|0|0|0|0|0|0
-  ```
-
-### **d. Genre Data (`u-1.genre`)**
-
-- **Purpose:** Maps genre IDs to genre names.
-- **Fields:**  
-  - **genre_name|genre_id**
-- **Example:**  
-  ```
-  unknown|0
-  Action|1
-  Adventure|2
-  ```
+- Predict user preferences for movies using latent factors.
+- Implement and train matrix factorization from scratch using gradient descent.
+- Explore how hyperparameters like number of latent factors (`k`), learning rate (`lr`), and regularization strength (`λ`) affect performance.
+- Visualize convergence of training error and hyperparameter sensitivity.
 
 ---
 
-## **3. Code Files and Their Roles**
+## 📂 Project Structure
 
-### **a. DataPreprocessing.py**
+.
+├── train.txt # Training data from MovieLens 100K (user, item, rating)
+├── test.txt # Test data from MovieLens 100K
+├── main.py # Main Python script with training, evaluation, visualization
+├── P.npy # Learned user feature matrix
+├── Q.npy # Learned item feature matrix
+└── README.md # This file
 
-- **Purpose:** Prepares the data for training and evaluation.
-- **What it does:**
-  - **Loads the datasets:** Reads user, ratings, movie, and genre data.
-  - **Splits the data:** Divides the ratings into training and test sets.
-  - **Saves the splits:** Writes the training and test sets to `train.txt` and `test.txt`.
-- **Inputs:**  
-  - `u-1.data` (ratings)
-  - `u-1.user` (users)
-  - `u-1.item` (movies)
-  - `u-1.genre` (genres)
-- **Outputs:**  
-  - `train.txt` (training ratings)
-  - `test.txt` (test ratings)
-- **Objective:**  
-  - Prepare clean, ready-to-use datasets for model training and evaluation.
-
-**How it works:**
-1. **Loads all data files.**
-2. **Splits the ratings into 80% training and 20% test.**
-3. **Saves the splits for later use.**
+yaml
+Copy
+Edit
 
 ---
 
-### **b. RecommendsSystem.py**
+## ⚙️ Methodology
 
-- **Purpose:** Trains a matrix factorization model to predict movie ratings.
-- **What it does:**
-  - **Initializes user and movie latent factor matrices (`P` and `Q`).**
-  - **Trains the model:** Uses gradient descent to learn latent factors that minimize the prediction error.
-  - **Evaluates the model:** Calculates the error (objective function) and plots it over iterations.
-  - **Hyperparameter tuning:** Tests different numbers of latent factors, regularization strengths, and learning rates.
-  - **Evaluates performance:** Calculates RMSE on both training and test data.
-  - **Saves the model:** Stores the learned matrices as `P.npy` and `Q.npy`.
-- **Inputs:**  
-  - `train.txt` (training ratings)
-  - (Optional) `test.txt` (test ratings)
-- **Outputs:**  
-  - `P.npy` (user latent factors)
-  - `Q.npy` (movie latent factors)
-  - **Plots:** Error vs. iterations, error vs. latent factors, etc.
-  - **RMSE:** Root Mean Squared Error on train and test data.
-- **Objective:**  
-  - Learn latent factors that capture user and movie preferences.
-  - Provide a basis for making personalized recommendations.
+The algorithm factorizes the user-item rating matrix `R` into two lower-rank matrices:
 
-**How it works:**
-1. **Determines the number of users and movies from the data.**
-2. **Initializes random latent factor matrices.**
-3. **Trains the model by updating the matrices to minimize prediction error.**
-4. **Evaluates and tunes the model using different hyperparameters.**
-5. **Saves the final matrices for use in recommendations.**
+> **R ≈ P × Qᵀ**
+
+Where:
+- `P` is the user feature matrix (num_users × k)
+- `Q` is the item feature matrix (num_items × k)
+- `k` is the number of latent features (e.g., user preferences, item traits)
+
+We optimize the objective function:
+
+> **E = Σ(r_ui - p_u·q_i)² + λ(||p_u||² + ||q_i||²)**
+
+using **stochastic gradient descent**.
 
 ---
 
-### **c. RecommendsMovie.py**
+## 🚀 How to Run
 
-- **Purpose:** Provides movie and genre recommendations to users based on their profile.
-- **What it does:**
-  - **Loads the datasets.**
-  - **Prompts the user for age, gender, and occupation.**
-  - **Finds similar users:** Searches for users with similar age, gender, and occupation.
-  - **Recommends movies:** Suggests movies that similar users have rated highly (or popular movies if no similar users are found).
-  - **Recommends genres:** Identifies the most common genres among the recommended movies.
-  - **Displays results:** Shows the top recommended movies and genres.
-- **Inputs:**  
-  - **User input:** Age, gender, occupation (from a dropdown).
-  - **Data files:** `u-1.user`, `u-1.data`, `u-1.item`, `u-1.genre`
-- **Outputs:**  
-  - **Recommended movies:** List of movie titles.
-  - **Recommended genres:** List of genre names.
-- **Objective:**  
-  - Help users discover movies and genres they are likely to enjoy, based on their profile and the preferences of similar users.
+### ✅ Requirements
 
-**How it works:**
-1. **Loads all necessary data.**
-2. **Prompts the user for their profile.**
-3. **Finds users with similar profiles.**
-4. **Recommends movies and genres based on the preferences of those users.**
-5. **Displays the results to the user.**
+- Python 3.7+
+- NumPy
+- Matplotlib
 
----
+Install dependencies using:
 
-## **4. Project Workflow**
+```bash
+pip install numpy matplotlib
+▶️ Run the Project
+bash
+Copy
+Edit
+python main.py
+This will:
 
-1. **Data Preparation:**  
-   - `DataPreprocessing.py` splits the ratings into training and test sets.
-2. **Model Training:**  
-   - `RecommendsSystem.py` trains the matrix factorization model and saves the latent factors.
-3. **Recommendation:**  
-   - `RecommendsMovie.py` uses the data and (optionally) the latent factors to recommend movies and genres to users.
+Train the model on train.txt
 
----
+Evaluate RMSE on both training and test sets
 
-## **5. Inputs and Outputs Summary**
+Save the P.npy and Q.npy matrices
 
-| File/Step             | Inputs                                  | Outputs                               | Objective                                  |
-|-----------------------|-----------------------------------------|---------------------------------------|--------------------------------------------|
-| DataPreprocessing.py  | u-1.data, u-1.user, u-1.item, u-1.genre | train.txt, test.txt                   | Prepare data for training and evaluation   |
-| RecommendsSystem.py   | train.txt, test.txt                     | P.npy, Q.npy, plots, RMSE             | Train and evaluate the recommendation model|
-| RecommendsMovie.py    | User input, data files                  | Recommended movies, genres            | Provide personalized recommendations       |
+Plot:
 
----
+Error vs Iterations
 
-## **6. Objectives**
+Error vs Latent Factor k
 
-- **Personalized Recommendations:** Help users discover movies tailored to their profile.
-- **User-Friendly Interface:** Simple input and clear output for users.
-- **Scalable and Extensible:** Can be extended with more advanced algorithms or a web interface.
-- **Educational:** Demonstrates how real-world data and machine learning can be used to build practical recommendation systems.
+Error vs Learning Rate
 
----
+Error vs Regularization
 
-## **7. Example Scenario**
+📈 Visualizations
+The code generates the following plots:
 
-1. **Data Preparation:**  
-   - Run `DataPreprocessing.py` to split the data.
-2. **Model Training:**  
-   - Run `RecommendsSystem.py` to train the model and save the latent factors.
-3. **Recommendation:**  
-   - Run `RecommendsMovie.py` and enter your age, gender, and occupation.
-   - The system recommends movies and genres you might like.
+Error vs. Iterations: See how the objective function converges during training.
 
----
+Error vs. Latent Factors (k): Analyze model performance for different dimensionalities.
 
-## **8. Future Enhancements**
+Error vs. Learning Rate: Explore stability and convergence speed.
 
-- **Web Interface:** Build a simple website for users to enter their information and see recommendations visually.
-- **Advanced Algorithms:** Incorporate matrix factorization (`P.npy`, `Q.npy`) for more accurate recommendations, especially for new users.
-- **Genre Images:** Display icons or images for each recommended genre.
+Error vs. Regularization Strength: Examine how overfitting is controlled.
 
----
+🔢 Example Output (Console)
+bash
+Copy
+Edit
+Iteration 1/5 - Error: 92234.3125
+Iteration 2/5 - Error: 84217.1953
+...
+Train RMSE: 0.9453
+Test RMSE: 0.9812
+🔧 Hyperparameter Tuning
+You can easily tune:
 
-## **9. Summary Table**
+k (latent factors): Try values from 10 to 50.
 
-| File                | Role                        | Inputs                         | Outputs                        |
-|---------------------|-----------------------------|--------------------------------|--------------------------------|
-| DataPreprocessing.py| Data preparation            | u-1.data, u-1.user, u-1.item   | train.txt, test.txt            |
-| RecommendsSystem.py | Model training & evaluation | train.txt, test.txt            | P.npy, Q.npy, plots, RMSE      |
-| RecommendsMovie.py  | Recommendation              | User input, data files         | Recommended movies, genres     |
+learning_rate: Start with 0.005 and increase gradually.
 
----
+regularization: Controls overfitting (try 0.1 to 1.0).
 
-## **10. Conclusion**
+num_iterations: Training epochs.
 
-This project provides a **complete, end-to-end movie recommendation system** using real-world data and both simple and advanced machine learning techniques. It is easy to understand, extend, and adapt for other recommendation tasks. By combining user profiles, movie ratings, and genre information, the system helps users discover new movies they are likely to enjoy, and lays the foundation for more advanced features in the future.
+These are set at the top of the script.
+
+🧪 Evaluation Metric
+We use Root Mean Squared Error (RMSE) to evaluate prediction performance:
+
+RMSE = sqrt(Σ(predicted - actual)² / N)
+
+Computed separately for both training and test data.
+
+🛠️ Customization
+Change dataset: Replace train.txt and test.txt with other MovieLens splits.
+
+Adjust training logic: Modify gradient_descent() in main.py.
+
+Add additional plots or logging for deeper insights.
+
+🤝 Contributing
+Pull requests, bug reports, and ideas are welcome! If you find a way to improve convergence, handle cold-starts, or integrate implicit feedback — feel free to contribute.
+
+📄 License
+This project is licensed under the MIT License. See LICENSE for details.
+
+📚 References
+GroupLens MovieLens Dataset: https://grouplens.org/datasets/movielens/100k/
+
+Koren, Y., Bell, R., & Volinsky, C. (2009). Matrix factorization techniques for recommender systems. IEEE Computer.
